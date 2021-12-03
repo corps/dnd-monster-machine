@@ -1,0 +1,5 @@
+#! /usr/bin/env bash
+set -e
+
+make
+exec docker run --rm -it dndmm $@
