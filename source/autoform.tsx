@@ -294,3 +294,18 @@ export function concat<T extends any[], V>(
 ): AutoInput<[...T, V]> {
 	return apply2(lift(a => b => [...a, b]), A, B)
 }
+
+type UnwrapAuto<T extends AutoInput<any>> = T extends AutoInput<infer V> ? V : unknown;
+
+type AutoRecord<T extends Record<string, any>> = {
+	[A in keyof T]: T[A] extends AutoInput<any> ? UnwrapAuto<T[A]> : unknown
+}
+
+export function objectFrom<
+	O extends Record<string, AutoRecord<any>>
+>(d: AutoRecord<O>, o: O): AutoInput<AutoRecord<O>> {
+	let result: AutoInput<AutoRecord<O>> = lift(d);
+	for (let k in o) {
+
+	}
+}
