@@ -1,11 +1,5 @@
 import {
-	defaultCombatRank,
-	defaultMonster,
-	defaultRankLevel,
-	EditMonster,
-	Monster,
-	RankLevel,
-	Template
+	CombatRank, defaultCombatRank, defaultMonster, defaultRankLevel, EditMonster, Monster, RankLevel, Template
 } from "./types";
 import {emptyObject, emptyTuple, matchNumber, matchWhitespace, Parser} from "./parser";
 
@@ -86,4 +80,35 @@ export function inferCombatRank(rankLevel: RankLevel, normalized: Monster) {
 	}
 
 	return ranks.Paragon;
+}
+
+export function expandToRankLevel(combatLevel: number, combatRank: CombatRank): RankLevel {
+	const {hp, ac, ab, attack, damage, dcs: [dc1, dc2], st: [st1, st2, st3], prof} = combatLevelToGruntPower(combatLevel);
+	return {
+		hp: Math.floor(hp * combatRank.hpMult),
+		ac: ac + combatRank.acMod,
+		ab,
+		attack: attack + combatRank.attackMod,
+		damage: Math.floor(damage * combatRank.dmgMult),
+		dcs: [dc1 + combatRank.dcMod, dc2 + combatRank.dcMod],
+		st: [st1 + combatRank.stMod, st2 + combatRank.stMod, st3 + combatRank.stMod],
+		prof
+	}
+}
+
+export function expandEdit(editMonster: EditMonster): Monster {
+	const {CombatLevel, CombatRank, DamageImmunities, DamageResistances, DamageVulnerabilities, ConditionImmunities} = editMonster;
+	const {hp, prof,  ac} = expandToRankLevel(CombatLevel, CombatRank);
+
+	return {
+		...defaultMonster,
+		HP: { Value: hp, Notes: "" },
+		InitiativeModifier: CombatRank.initProfMod * prof, // + dex
+		Saves: defaultMonster.Saves,
+		AC: { Value: ac, Notes: "" },
+		DamageImmunities,
+		DamageResistances,
+		DamageVulnerabilities,
+		ConditionImmunities,
+	}
 }

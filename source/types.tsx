@@ -17,8 +17,8 @@ export const defaultMonster = {
 	Source: "dndmm",
 	Type: "beast",
 	Challenge: "0",
-	HP: {Value: 3},
-	AC: {Value: 10},
+	HP: {Value: 3, Notes: ""},
+	AC: {Value: 10, Notes: ""},
 	InitiativeModifier: 0,
 	InitiativeAdvantage: false,
 	Speed: [

@@ -239,10 +239,10 @@ export function apply<I, O>(input: AutoInput<(i: I) => O>, param: AutoInput<I>):
       }
     }, [lastF, lastP]);
 
-    return <Box flexDirection="column">
+    return <>
       <AutoForm order={0} parentId={focusId} input={input} onChange={setLastF}/>
       <AutoForm order={1} parentId={focusId} input={param} onChange={setLastP}/>
-    </Box>
+    </>
   }) as AutoInput<O>;
 }
 
@@ -286,4 +286,11 @@ export function apply4<I, I2, I3, I4, O>(
   p4: AutoInput<I4>
 ): AutoInput<O> {
   return apply(apply(apply(apply(Input, p), p2), p3), p4);
+}
+
+export function concat<T extends any[], V>(
+	A: AutoInput<T>,
+	B: AutoInput<V>
+): AutoInput<[...T, V]> {
+	return apply2(lift(a => b => [...a, b]), A, B)
 }
