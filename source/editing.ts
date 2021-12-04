@@ -46,7 +46,7 @@ export const roles: Record<'Controller' | 'Defender' | 'Lurker' | 'Scout' | 'Str
 	},
 }
 
-export const conditionImmunitiesByPredicate: Record<string, string[]> = {
+export const conditionImmunitiesByFlag: Record<string, string[]> = {
 	celestial: [],
 	hardened: [],
 	intangible: ['grappled', 'restrained'],
@@ -58,7 +58,7 @@ export const conditionImmunitiesByPredicate: Record<string, string[]> = {
 	toxic: ['poisoned', 'petrified']
 }
 
-export const vulnerabilitiesByPredicate: Record<string, string[]> = {
+export const vulnerabilitiesByFlag: Record<string, string[]> = {
 	celestial: [],
 	fey: [],
 	hardened: [],
@@ -70,7 +70,7 @@ export const vulnerabilitiesByPredicate: Record<string, string[]> = {
 	animated: ['thunder']
 }
 
-export const resistancesByPredicate: Record<string, string[]> = {
+export const resistancesByFlag: Record<string, string[]> = {
 	animated: [],
 	intangible: [],
 	swarm: [],
@@ -82,7 +82,7 @@ export const resistancesByPredicate: Record<string, string[]> = {
 	toxic: ['poison']
 }
 
-export const immunitiesByPredicate: Record<string, string[]> = {
+export const immunitiesByFlag: Record<string, string[]> = {
 	celestial: [],
 	fey: [],
 	hardened: [],
@@ -93,19 +93,6 @@ export const immunitiesByPredicate: Record<string, string[]> = {
 	undead: ['poison'],
 	animated: ['psychic', 'poison']
 }
-
-export function infer<S extends string>(inference: Record<S, string[]>, facts: string[]): Set<S> {
-	const result: Set<S> = new Set();
-
-	Object.entries<string[]>(inference).forEach(([predicate, options]: [string, string[]]) => {
-		if (options.length > 0 && options.every(o => facts.includes(o))) {
-			result.add(predicate as S);
-		}
-	});
-
-	return result;
-}
-
 
 export function toEditMonster(monster: Monster): EditMonster {
 	const normalized: Monster = {...defaultMonster, ...monster};
@@ -193,14 +180,14 @@ export function abModAsAb(mod: number) {
 }
 
 export function abAsAbMod(ab: number) {
-	return Math.floor(ab - 10 / 2);
+	return Math.floor((ab - 10) / 2);
 }
 
 export function expandEdit(editMonster: EditMonster): Monster {
 	const {
 		CombatLevel, CombatRank, CombatRole, flags
 	} = editMonster;
-	const {hp, prof, ac, ab, st} = expandToRankLevel(CombatLevel, CombatRank, CombatRole);
+	const {hp, prof, ac, ab, st, attack, dcs, damage} = expandToRankLevel(CombatLevel, CombatRank, CombatRole);
 
 
 	const Abilities = {...defaultMonster.Abilities};
@@ -222,10 +209,46 @@ export function expandEdit(editMonster: EditMonster): Monster {
 		}
 	})
 
-	const DamageImmunities = flags.map(k => immunitiesByPredicate[k] || []).flat()
-	const DamageResistances = flags.map(k => resistancesByPredicate[k] || []).flat()
-	const DamageVulnerabilities = flags.map(k => vulnerabilitiesByPredicate[k] || []).flat()
-	const ConditionImmunities = flags.map(k => conditionImmunitiesByPredicate[k] || []).flat()
+	const DamageImmunities = flags.map(k => immunitiesByFlag[k] || []).flat()
+	const DamageResistances = flags.map(k => resistancesByFlag[k] || []).flat()
+	const DamageVulnerabilities = flags.map(k => vulnerabilitiesByFlag[k] || []).flat()
+	const ConditionImmunities = flags.map(k => conditionImmunitiesByFlag[k] || []).flat()
+
+	const Actions = [...defaultMonster.Actions];
+	const BonusActions = [...defaultMonster.BonusActions];
+	const Reactions = [...defaultMonster.Reactions];
+	const LegendaryActions = [...defaultMonster.LegendaryActions];
+	const Traits = [...defaultMonster.Traits];
+
+	Traits.push({Name: '+', Content: editMonster.WinCondition});
+	Traits.push({Name: '-', Content: editMonster.CounterMeasure});
+
+	Actions.push({
+		Name: 'Attack',
+		Content: `Attack: ${attack}, DC ${dcs[0]}, Damage: ${[4, 6, 8, 12].map(sides => rollToString(toRoll(damage, sides))).join(' / ')}`,
+	})
+
+	if (flags.includes('legendary')) {
+		Traits.push({
+			Name: 'Legendary Resistance (3/Day)',
+			Content: 'May succeed a failed saving throw.',
+		})
+
+		LegendaryActions.push({
+			Name: 'Move',
+			Content: 'Make another movement (2 Actions)',
+		})
+	}
+
+	BonusActions.push({
+		Name: 'Secondary Effect',
+		Content: `DC ${dcs[1]}`
+	})
+
+	Reactions.push({
+		Name: 'Reaction',
+		Content: `Prof: ${prof}`
+	})
 
 	return {
 		...defaultMonster,
@@ -233,7 +256,7 @@ export function expandEdit(editMonster: EditMonster): Monster {
 		InitiativeModifier: (prof * (CombatRank.initProfMod + CombatRole.initProfMod)) + abAsAbMod(Abilities.Dex),
 		Saves: Saves,
 		AC: {Value: ac, Notes: ""},
-		Senses: [`passive Perception ${abAsAbMod(Abilities.Wis) + prof * CombatRole.perceptionProfMod}`],
+		Senses: [`passive Perception ${10 + abAsAbMod(Abilities.Wis) + prof * CombatRole.perceptionProfMod}`],
 		Skills: [
 			{
 				Name: 'Stealth', Modifier: abAsAbMod(Abilities.Dex) + prof * CombatRole.stealthProfMod
@@ -245,6 +268,11 @@ export function expandEdit(editMonster: EditMonster): Monster {
 		DamageResistances,
 		DamageVulnerabilities,
 		ConditionImmunities,
+		Traits,
+		Actions,
+		BonusActions,
+		Reactions,
+		LegendaryActions,
 	}
 }
 

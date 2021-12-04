@@ -47,6 +47,8 @@ export const defaultEditMonster = {
 	CombatRole: defaultCombatRole,
 	Abilities: ["Str", "Dex", "Con", "Wis", "Int", "Cha"],
 	flags: [] as string[],
+	WinCondition: "",
+	CounterMeasure: "",
 }
 
 export type EditMonster = typeof defaultEditMonster;

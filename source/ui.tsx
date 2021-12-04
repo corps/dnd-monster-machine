@@ -1,16 +1,25 @@
 import React, {PropsWithChildren, useMemo} from 'react';
 import {Monster} from "./types";
 import {
-	conditionImmunitiesByPredicate,
+	conditionImmunitiesByFlag,
 	expandEdit,
-	immunitiesByPredicate,
-	ranks, resistancesByPredicate,
+	immunitiesByFlag,
+	ranks, resistancesByFlag,
 	roles,
 	toEditMonster,
-	vulnerabilitiesByPredicate
+	vulnerabilitiesByFlag
 } from "./editing";
 import {
-	autoMultiSelect, AutoNumber, autoOption, autoOrder, labeled, noop, objectFrom, passThrough, translate, useTap
+	autoMultiSelect,
+	AutoNumber,
+	autoOption,
+	autoOrder, AutoString,
+	labeled,
+	noop,
+	objectFrom,
+	passThrough,
+	translate,
+	useTap
 } from "./autoform";
 import {Newline, useApp, useInput} from "ink";
 import Table from "ink-table";
@@ -40,7 +49,11 @@ export function Editor({startingJson}: PropsWithChildren<EditorProps>) {
 			CombatRole: labeled("Role", translate(autoOption(Object.keys(roles) as (keyof typeof roles)[]), k => roles[k], role =>
 				Object.keys(roles).find(k => ((roles as any)[k] === role)) as any || 'Controller')),
 			Abilities: labeled("Abilities", autoOrder(startingEdit.Abilities)),
-			flags: labeled("Flags", autoMultiSelect(Object.keys({...immunitiesByPredicate, ...vulnerabilitiesByPredicate, ...conditionImmunitiesByPredicate, ...resistancesByPredicate}))),
+			WinCondition: labeled('Win Condition', AutoString),
+			CounterMeasure: labeled('Counter Measure', AutoString),
+			flags: labeled("Flags",
+				autoMultiSelect([...Object.keys({...immunitiesByFlag, ...vulnerabilitiesByFlag, ...conditionImmunitiesByFlag, ...resistancesByFlag}),
+					'legendary'])),
 		})
 	}, [startingEdit]), startingEdit);
 
@@ -62,6 +75,7 @@ export function Editor({startingJson}: PropsWithChildren<EditorProps>) {
 		<EditMonster onChange={noop} order={0} parentId={0}/>
 		<Newline/>
 		<Table data={baseData}/>
+		<Table data={[...monster.Traits, ...monster.Actions, ...monster.BonusActions, ...monster.Reactions, ...monster.LegendaryActions]}/>
 	</>;
 }
 
