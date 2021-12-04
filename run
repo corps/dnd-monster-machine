@@ -1,5 +1,4 @@
 #! /usr/bin/env bash
 set -e
 
-make
-exec docker run --rm -it dndmm node dist/cli.js $@
+exec node dist/cli.js $@
