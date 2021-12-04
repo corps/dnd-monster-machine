@@ -1,8 +1,16 @@
 import React, {PropsWithChildren, useMemo} from 'react';
 import {Monster} from "./types";
-import {expandEdit, ranks, roles, toEditMonster} from "./editing";
 import {
-	AutoBool, AutoNumber, autoOption, autoOrder, labeled, noop, objectFrom, passThrough, translate, useTap
+	conditionImmunitiesByPredicate,
+	expandEdit,
+	immunitiesByPredicate,
+	ranks, resistancesByPredicate,
+	roles,
+	toEditMonster,
+	vulnerabilitiesByPredicate
+} from "./editing";
+import {
+	autoMultiSelect, AutoNumber, autoOption, autoOrder, labeled, noop, objectFrom, passThrough, translate, useTap
 } from "./autoform";
 import {Newline, useApp, useInput} from "ink";
 import Table from "ink-table";
@@ -32,15 +40,7 @@ export function Editor({startingJson}: PropsWithChildren<EditorProps>) {
 			CombatRole: labeled("Role", translate(autoOption(Object.keys(roles) as (keyof typeof roles)[]), k => roles[k], role =>
 				Object.keys(roles).find(k => ((roles as any)[k] === role)) as any || 'Controller')),
 			Abilities: labeled("Abilities", autoOrder(startingEdit.Abilities)),
-			intangible: labeled("Intangible?", AutoBool),
-			animated: labeled("Animated?", AutoBool),
-			undead: labeled("Undead?", AutoBool),
-			celestial: labeled("Celestial?", AutoBool),
-			fey: labeled("Fey?", AutoBool),
-			wriggler: labeled("Wriggler?", AutoBool),
-			swarm: labeled("Swarm?", AutoBool),
-			toxic: labeled("Toxic?", AutoBool),
-			hardened: labeled("Hardened?", AutoBool),
+			flags: labeled("Flags", autoMultiSelect(Object.keys({...immunitiesByPredicate, ...vulnerabilitiesByPredicate, ...conditionImmunitiesByPredicate, ...resistancesByPredicate}))),
 		})
 	}, [startingEdit]), startingEdit);
 

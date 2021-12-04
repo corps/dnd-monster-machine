@@ -45,16 +45,8 @@ export const defaultEditMonster = {
 	CombatLevel: 0,
 	CombatRank: defaultCombatRank,
 	CombatRole: defaultCombatRole,
-	Abilities: ["str", "dex", "con", "wis", "int", "cha"],
-	intangible: false,
-	animated: false,
-	undead: false,
-	celestial: false,
-	fey: false,
-	wriggler: false,
-	swarm: false,
-	toxic: false,
-	hardened: false,
+	Abilities: ["Str", "Dex", "Con", "Wis", "Int", "Cha"],
+	flags: [] as string[],
 }
 
 export type EditMonster = typeof defaultEditMonster;

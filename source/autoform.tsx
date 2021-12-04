@@ -8,9 +8,11 @@ import {useCell} from "./use_cell";
 import {Box, Text} from "ink";
 import {Checkbox} from "./checkbox";
 import {useFocus2, useFocusManager2} from "./better_focus";
+import {SearchableMultiSelect} from "./searchable_multiselect";
 
 const FocusableTextInput = ShareFocus(TextInput);
 const FocusableCheckbox = ShareFocus(Checkbox);
+const FocusableMultiSelect = ShareFocus(SearchableMultiSelect);
 
 export type BoundAutoInputParams<T> = { onChange: (t: T) => void, order: number, parentId: number }
 export type AutoInputParams<T> = BoundAutoInputParams<T> & { default: T }
@@ -323,4 +325,31 @@ export function autoOrder<T extends S[], S extends string>(t: T): AutoInput<T> {
 	}
 
 	return result;
+}
+
+export function autoMultiSelect(t: string[]): AutoInput<string[]> {
+	const items = t.map(v => [v] as [string]);
+	return ({onChange, order, parentId, default: d}) => {
+		const [value, setValue] = useState(d);
+
+		const innerOnChange = useCallback((v) => {
+			setValue(v);
+			onChange(v);
+		}, [onChange]);
+
+		const changeBy = useCallback((v: string) => {
+			if (value.includes(v)) {
+				const newV = [...value];
+				newV.splice(newV.indexOf(v), 1);
+				innerOnChange(newV);
+			} else {
+				innerOnChange([...value, v]);
+			}
+		}, [innerOnChange, value])
+
+		return <>
+			<Text>{value.join(', ')}</Text>
+			<FocusableMultiSelect order={order} parentId={parentId} items={items} pinned={value} onSubmit={changeBy} onSelect={noop} />
+		</>
+	}
 }
