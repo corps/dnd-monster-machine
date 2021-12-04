@@ -7,7 +7,7 @@ image.marker: $(call find_updated_sources)
 	touch image.marker
 
 bash: image.marker
-	docker run --rm -it -v $(PWD):/app dndmm bash
+	docker run --rm -it dndmm bash
 
 run: image.marker
 	docker run --rm -it dndmm

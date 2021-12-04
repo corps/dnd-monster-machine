@@ -3,7 +3,7 @@ import React from 'react';
 import {render} from 'ink';
 import meow from 'meow';
 import * as fs from 'fs';
-import {defaultMonster, Monster, Template} from "./types";
+import {defaultMonster, Monster} from "./types";
 import { Editor } from './ui';
 import {BetterFocus} from "./better_focus";
 
@@ -21,7 +21,7 @@ const cli = meow(`
 	}
 });
 
-const startingJson: Monster | Template = cli.flags.in ? JSON.parse(fs.readFileSync(cli.flags.in, 'utf-8')) : defaultMonster;
+const startingJson: Monster = cli.flags.in ? JSON.parse(fs.readFileSync(cli.flags.in, 'utf-8')) : defaultMonster;
 
 render(
 	<BetterFocus>

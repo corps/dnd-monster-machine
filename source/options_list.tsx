@@ -1,4 +1,4 @@
-import React, {useMemo} from "react";
+import React, {ReactNode, useMemo} from "react";
 import {Box, Text, useInput} from 'ink'
 import {ShareFocus} from "./share_focus";
 
@@ -46,24 +46,31 @@ export function OptionsList({options, hide, disabled = [], onChange, selected, f
     }
   }, {isActive: focus});
 
-  return <Box flexDirection="column">
-    {hide && !focus ? null : options.map((option, i) => {
-      const string = stringOptions[i];
+  function showOption(option: string | {child: ReactNode, label: string}, i: number) {
+		const string = stringOptions[i];
 
-      return <Box key={i + ""} flexDirection="column">
-        <Text
-          underline={selected === string}
-          inverse={selected === string && focus}
-          bold={!disabled.includes(string as any)}
-          dimColor={disabled.includes(string as any)}
-          italic={disabled.includes(string as any)}>
-          {string}
-        </Text>
-        <Box marginLeft={2}>
-          {selected === string ? typeof option === "string" ? null : option.child : null}
-        </Box>
-      </Box>
-    })}
+		return <Box key={i + ""} flexDirection="column">
+			<Text
+				underline={selected === string}
+				inverse={selected === string && focus}
+				bold={!disabled.includes(string as any)}
+				dimColor={disabled.includes(string as any)}
+				italic={disabled.includes(string as any)}>
+				{ focus ? null : '[' }
+				{string}
+				{ focus ? null : ']' }
+			</Text>
+			<Box marginLeft={2}>
+				{selected === string ? typeof option === "string" ? null : option.child : null}
+			</Box>
+		</Box>
+	}
+
+  const expandedOptions = options.map((option, i) => showOption(option, i));
+  const selectedOption = selectedIdx !== -1 ? showOption(options[selectedIdx] || null as any, selectedIdx) : null;
+
+  return <Box flexDirection="column">
+    {hide && !focus ? null : !focus ?  selectedOption : expandedOptions}
   </Box>
 }
 

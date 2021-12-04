@@ -7,6 +7,6 @@ RUN npm install
 COPY . /app
 ENV PATH=/app/node_modules/.bin:$PATH
 RUN npm run build
-ENTRYPOINT node dist/cli.js
+CMD node dist/cli.js
 
 

@@ -13,8 +13,56 @@ export type TraitOrAction = typeof defaultContent;
 // (3/Day)
 // (Recharge 5-6)
 
+export const defaultCombatRole = {
+	acMod: 0,
+	stMod: 0,
+	hpMult: 1,
+	attack: 0,
+	dcMod: 0,
+	dmgMult: 1,
+	speed: 0,
+	perceptionProfMod: 0,
+	stealthProfMod: 0,
+	initProfMod: 0,
+}
+
+export type CombatRole = typeof defaultCombatRole;
+
+export const defaultCombatRank = {
+	acMod: 0,
+	hpMult: 1,
+	stMod: 0,
+	initProfMod: 0,
+	attackMod: 0,
+	dcMod: 0,
+	dmgMult: 1,
+	xpMult: 1,
+};
+
+export type CombatRank = typeof defaultCombatRank;
+
+export const defaultEditMonster = {
+	CombatLevel: 0,
+	CombatRank: defaultCombatRank,
+	CombatRole: defaultCombatRole,
+	Abilities: ["str", "dex", "con", "wis", "int", "cha"],
+	intangible: false,
+	animated: false,
+	undead: false,
+	celestial: false,
+	fey: false,
+	wriggler: false,
+	swarm: false,
+	toxic: false,
+	hardened: false,
+}
+
+export type EditMonster = typeof defaultEditMonster;
+
+
 export const defaultMonster = {
 	Source: "dndmm",
+	_editing: defaultEditMonster,
 	Type: "beast",
 	Challenge: "0",
 	HP: {Value: 3, Notes: ""},
@@ -48,33 +96,7 @@ export const defaultMonster = {
 
 export type Monster = typeof defaultMonster;
 
-const {Traits, Reactions, DamageVulnerabilities, DamageResistances, DamageImmunities, ConditionImmunities, Abilities} = defaultMonster;
-export const defaultTemplate = {Traits, Reactions, DamageImmunities, DamageResistances, DamageVulnerabilities, ConditionImmunities, Abilities};
-export type Template = typeof defaultTemplate;
 
-export const defaultCombatRank = {
-	acMod: 0,
-	hpMult: 1,
-	stMod: 0,
-	initProfMod: 0,
-	attackMod: 0,
-	dcMod: 0,
-	dmgMult: 1,
-	xpMult: 1,
-};
-
-export type CombatRank = typeof defaultCombatRank;
-
-export const defaultEditMonster = {
-	CombatLevel: 0,
-	CombatRank: defaultCombatRank,
-	DamageVulnerabilities: [] as string[],
-	DamageResistances: [] as string[],
-	DamageImmunities: [] as string[],
-	ConditionImmunities: [] as string[],
-}
-
-export type EditMonster = typeof defaultEditMonster;
 
 export const defaultRankLevel = {
 	ac: 0,

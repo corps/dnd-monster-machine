@@ -2,18 +2,18 @@ import React from 'react';
 import {Text, useInput} from "ink";
 
 interface Props {
-  checked: boolean,
+  value: boolean,
   onChange: (v: boolean) => void,
   focus?: boolean,
 }
 
-export function Checkbox({ checked, onChange, focus }: Props) {
-  const mark = checked ? '✓' : ' ';
+export function Checkbox({ value, onChange, focus }: Props) {
+  const mark = value ? '✓' : ' ';
 
   useInput((_, key) => {
     if (!focus) return;
     if (key.return) {
-      onChange(!checked);
+      onChange(!value);
     }
   }, {isActive: focus});
 

@@ -2,4 +2,4 @@
 set -e
 
 make
-exec docker run --rm -it dndmm $@
+exec docker run --rm -it dndmm node dist/cli.js $@

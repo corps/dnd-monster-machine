@@ -1,46 +1,207 @@
 import {
-	CombatRank, defaultCombatRank, defaultMonster, defaultRankLevel, EditMonster, Monster, RankLevel, Template
+	CombatRank, CombatRole,
+	defaultCombatRank,
+	defaultCombatRole,
+	defaultMonster,
+	defaultRankLevel,
+	EditMonster,
+	Monster,
+	RankLevel,
 } from "./types";
 import {emptyObject, emptyTuple, matchNumber, matchWhitespace, Parser} from "./parser";
 
-export const ranks = {
+export const ranks: Record<'Minion' | 'Grunt' | 'Elite' | 'Paragon', CombatRank> = {
 	Minion: {...defaultCombatRank, acMod: -2, hpMult: 0.2, stMod: -2, dmgMult: 0.75, xpMult: 0.25},
 	Grunt: {...defaultCombatRank},
-	Elite: {...defaultCombatRank, acMod: 2, hpMult: 2, stMod: 2, dmgMult: 1.1, attackMod: 2, dcMod: 2, initProfMod: 1, xpMult: 2},
-	Paragon: {...defaultCombatRank, acMod: 2, hpMult: 4, stMod: 2, dmgMult: 1.2, attackMod: 2, dcMod: 2, initProfMod: 1, xpMult: 4},
+	Elite: {
+		...defaultCombatRank,
+		acMod: 2,
+		hpMult: 2,
+		stMod: 2,
+		dmgMult: 1.1,
+		attackMod: 2,
+		dcMod: 2,
+		initProfMod: 1,
+		xpMult: 2
+	},
+	Paragon: {
+		...defaultCombatRank,
+		acMod: 2,
+		hpMult: 4,
+		stMod: 2,
+		dmgMult: 1.2,
+		attackMod: 2,
+		dcMod: 2,
+		initProfMod: 1,
+		xpMult: 4
+	},
 };
 
-export function toEditMonster(monster: Monster | Template): EditMonster {
+export const roles: Record<'Controller' | 'Defender' | 'Lurker' | 'Scout' | 'Striker' | 'Supporter', CombatRole> = {
+	Controller: {
+		...defaultCombatRole,
+		acMod: 2,
+		stMod: 1,
+		dmgMult: 0.75,
+		initProfMod: 1,
+	},
+	Defender: {
+		...defaultCombatRole,
+		acMod: 4,
+		stMod: 2,
+		hpMult: 0.75,
+		speed: -5,
+	},
+	Lurker: {
+		...defaultCombatRole,
+		acMod: -4,
+		stMod: -2,
+		hpMult: 0.75,
+		attack: 3,
+		dcMod: 3,
+		dmgMult: 1.5,
+		speed: 5,
+		stealthProfMod: 1,
+	},
+	Scout: {
+		...defaultCombatRole,
+		attack: -1,
+		dcMod: -1,
+		dmgMult: 0.75,
+		speed: 10,
+		stealthProfMod: 1,
+		perceptionProfMod: 1,
+	},
+	Striker: {
+		...defaultCombatRole,
+		acMod: -2,
+		stMod: -1,
+		hpMult: 1.25,
+		attack: 2,
+		dcMod: 2,
+		dmgMult: 1.25,
+	},
+	Supporter: {
+		...defaultCombatRole,
+		hpMult: 1.5,
+		attack: -2,
+		dcMod: -2,
+		initProfMod: 1,
+	},
+}
+
+export const conditionImmunitiesByPredicate: Record<keyof EditMonster, string[]> = {
+	Abilities: [], CombatLevel: [], CombatRank: [], CombatRole: [],
+	celestial: [], hardened: [], intangible: ['grappled', 'restrained'],
+	animated: ['blinded', 'paralyzed', 'exhaustion', 'unconscious'],
+	undead: ['frightened', 'exhaustion', 'stunned', 'charmed', 'unconscious'],
+	fey: ['charmed'],
+	wriggler: ['prone'],
+	swarm: ['prone', 'exhaustion'],
+	toxic: ['poisoned', 'petrified']
+}
+
+export const vulnerabilitiesByPredicate: Record<keyof EditMonster, string[]> = {
+	Abilities: [], CombatLevel: [], CombatRank: [], CombatRole: [],
+	celestial: [],
+	fey: [],
+	hardened: [],
+	intangible: [],
+	toxic: [],
+	wriggler: [],
+	undead: ['radiant'], swarm: ['thunder'], animated: ['thunder']
+}
+
+export const resistancesByPredicate: Record<keyof EditMonster, string[]> = {
+	Abilities: [], CombatLevel: [], CombatRank: [], CombatRole: [],
+	animated: [],
+	intangible: [],
+	swarm: [],
+	wriggler: [],
+	hardened: ['blunt', 'piercing', 'slashing'],
+	undead: ['cold', 'necrotic'],
+	fey: ['psychic'],
+	celestial: ['radiant'],
+	toxic: ['poison']
+}
+
+export const immunitiesByPredicate: Record<keyof EditMonster, string[]> = {
+	Abilities: [], CombatLevel: [], CombatRank: [], CombatRole: [],
+	celestial: [],
+	fey: [],
+	hardened: [],
+	intangible: [],
+	swarm: [],
+	toxic: [],
+	wriggler: [],
+	undead: ['poison'], animated: ['psychic', 'poison']
+}
+
+export function infer<S extends string>(inference: Record<S, string[]>, facts: string[]): Set<S> {
+	const result: Set<S> = new Set();
+
+	Object.entries<string[]>(inference).forEach(([predicate, options]: [string, string[]]) => {
+		if (options.length > 0 && options.every(o => facts.includes(o))) {
+			result.add(predicate as S);
+		}
+	});
+
+	return result;
+}
+
+
+export function toEditMonster(monster: Monster): EditMonster {
 	const normalized: Monster = {...defaultMonster, ...monster};
-	const {DamageImmunities, ConditionImmunities, DamageResistances, DamageVulnerabilities} = normalized;
+	return normalized._editing;
+	//
+	// const {Challenge, DamageImmunities, ConditionImmunities, DamageResistances, DamageVulnerabilities} = normalized;
+	//
+	// const CombatLevel = parseInt(Challenge, 10) || 0;
+	// const RankLevel = combatLevelToGruntPower(CombatLevel);
+	// const CombatRank = inferCombatRank(RankLevel, normalized);
+	// const Abilities = inferAbilityPriority(monster.Abilities);
+	//
+	// const predicates = infer(conditionImmunitiesByPredicate, ConditionImmunities) || infer(
+	// 	vulnerabilitiesByPredicate,
+	// 	DamageVulnerabilities
+	// ) || infer(resistancesByPredicate, DamageResistances) || infer(immunitiesByPredicate, DamageImmunities)
+	//
+	// return {
+	// 	CombatLevel,
+	// 	CombatRank,
+	// 	Abilities,
+	// 	fey: predicates.has('fey'),
+	// 	undead: predicates.has('undead'),
+	// 	intangible: predicates.has('intangible'),
+	// 	animated: predicates.has('animated'),
+	// 	celestial: predicates.has('celestial'),
+	// 	hardened: predicates.has('hardened'),
+	// 	swarm: predicates.has('swarm'),
+	// 	toxic: predicates.has('toxic'),
+	// 	wriggler: predicates.has('wriggler'),
+	// }
+}
 
-	const CombatLevel = parseInt(normalized.Challenge, 10) || 0;
-	const RankLevel = combatLevelToGruntPower(CombatLevel);
-	const CombatRank = inferCombatRank(RankLevel, normalized);
-
-	return {
-		CombatLevel,
-		CombatRank,
-		DamageImmunities,
-		ConditionImmunities,
-		DamageResistances,
-		DamageVulnerabilities,
-	}
+export function inferAbilityPriority(abilities: Record<string, number>) {
+	return Object.entries(abilities).sort(([_, a], [__, b]) => b - a).map(([s]) => s);
 }
 
 const headNumber = matchNumber.terminatedBy(Parser.nextMatching(/, |-/));
 
-const rankLevelParser: Parser<RankLevel> =
-	emptyObject
-		.withKey('ac', matchNumber.terminatedBy(matchWhitespace))
-		.withKey('hp', matchNumber.terminatedBy(matchWhitespace))
-		.withKey('attack', matchNumber.terminatedBy(matchWhitespace))
-		.withKey('dcs', emptyTuple.plus(headNumber).plus(matchNumber).terminatedBy(matchWhitespace))
-		.withKey('damage', matchNumber.terminatedBy(matchWhitespace))
-		.withKey('prof', matchNumber.terminatedBy(matchWhitespace))
-		.withKey('st', emptyTuple.plus(headNumber).plus(headNumber).plus(matchNumber).terminatedBy(matchWhitespace))
-		.withKey('ab', emptyTuple.plus(headNumber).plus(headNumber).plus(headNumber).plus(headNumber).plus(headNumber).plus(matchNumber).terminatedBy(matchWhitespace))
-		.proceededBy(matchNumber.terminatedBy(matchWhitespace))
+const rankLevelParser: Parser<RankLevel> = emptyObject
+	.withKey('ac', matchNumber.terminatedBy(matchWhitespace))
+	.withKey('hp', matchNumber.terminatedBy(matchWhitespace))
+	.withKey('attack', matchNumber.terminatedBy(matchWhitespace))
+	.withKey('dcs', emptyTuple.plus(headNumber).plus(matchNumber).terminatedBy(matchWhitespace))
+	.withKey('damage', matchNumber.terminatedBy(matchWhitespace))
+	.withKey('prof', matchNumber.terminatedBy(matchWhitespace))
+	.withKey('st', emptyTuple.plus(headNumber).plus(headNumber).plus(matchNumber).terminatedBy(matchWhitespace))
+	.withKey(
+		'ab',
+		emptyTuple.plus(headNumber).plus(headNumber).plus(headNumber).plus(headNumber).plus(headNumber).plus(matchNumber)
+			.terminatedBy(matchWhitespace)
+	)
+	.proceededBy(matchNumber.terminatedBy(matchWhitespace))
 
 const rankLevels = `0 14 16 +2 7-10 1 +1 4, 2, 0 3, 2, 1, 1, 0, -1 1/8 25
 1 14 26 +3 8-11 2 +2 5, 3, 0 3, 2, 1, 1, 0, -1 1/4 50
@@ -82,33 +243,118 @@ export function inferCombatRank(rankLevel: RankLevel, normalized: Monster) {
 	return ranks.Paragon;
 }
 
-export function expandToRankLevel(combatLevel: number, combatRank: CombatRank): RankLevel {
+export function expandToRankLevel(combatLevel: number, combatRank: CombatRank, combatRole: CombatRole): RankLevel {
 	const {hp, ac, ab, attack, damage, dcs: [dc1, dc2], st: [st1, st2, st3], prof} = combatLevelToGruntPower(combatLevel);
+
 	return {
-		hp: Math.floor(hp * combatRank.hpMult),
-		ac: ac + combatRank.acMod,
+		hp: Math.floor(hp * combatRank.hpMult * combatRole.hpMult),
+		ac: ac + combatRank.acMod + combatRole.acMod,
 		ab,
-		attack: attack + combatRank.attackMod,
-		damage: Math.floor(damage * combatRank.dmgMult),
-		dcs: [dc1 + combatRank.dcMod, dc2 + combatRank.dcMod],
-		st: [st1 + combatRank.stMod, st2 + combatRank.stMod, st3 + combatRank.stMod],
+		attack: attack + combatRank.attackMod + combatRole.attack,
+		damage: Math.floor(damage * combatRank.dmgMult * combatRole.dmgMult),
+		dcs: [dc1 + combatRank.dcMod + combatRole.dcMod, dc2 + combatRank.dcMod + combatRole.dcMod],
+		st: [st1 + combatRank.stMod + combatRole.stealthProfMod, st2 + combatRank.stMod + combatRole.stMod, st3 + combatRank.stMod + combatRole.stMod],
 		prof
 	}
 }
 
+export function abModAsAb(mod: number) {
+	return 10 + mod * 2;
+}
+
+export function abAsAbMod(ab: number) {
+	return Math.floor(ab - 10 / 2);
+}
+
 export function expandEdit(editMonster: EditMonster): Monster {
-	const {CombatLevel, CombatRank, DamageImmunities, DamageResistances, DamageVulnerabilities, ConditionImmunities} = editMonster;
-	const {hp, prof,  ac} = expandToRankLevel(CombatLevel, CombatRank);
+	const {
+		CombatLevel,
+		CombatRank,
+		CombatRole,
+		...predicates
+	} = editMonster;
+	const {hp, prof, ac, ab, st} = expandToRankLevel(CombatLevel, CombatRank, CombatRole);
+
+
+	const Abilities = {...defaultMonster.Abilities};
+	const Saves = [...defaultMonster.Saves];
+
+	editMonster.Abilities.forEach((ability, i) => {
+		if (!(ability in Abilities)) return;
+		const nextVal = ab[i];
+		if (nextVal == null) return;
+		Abilities[ability as keyof typeof Abilities] = abModAsAb(nextVal);
+
+		if (i < 1) {
+			Saves.push({Name: ability, Modifier: st[0],})
+		} else if (i < 3) {
+			Saves.push({Name: ability, Modifier: st[1],})
+		} else {
+			Saves.push({Name: ability, Modifier: st[2],})
+		}
+	})
+
+	const DamageImmunities =
+		Object.entries(predicates).filter(([_, v]) => v).map(([k]: any[]) => (immunitiesByPredicate as any)[k] || [])
+		.flat()
+	const DamageResistances =
+		Object.entries(predicates).filter(([_, v]) => v).map(([k]: any[]) => (resistancesByPredicate as any)[k] || [])
+			.flat()
+	const DamageVulnerabilities =
+		Object.entries(predicates).filter(([_, v]) => v).map(([k]: any[]) => (vulnerabilitiesByPredicate as any)[k] || [])
+			.flat()
+	const ConditionImmunities =
+		Object.entries(predicates).filter(([_, v]) => v).map(([k]: any[]) => (conditionImmunitiesByPredicate as any)[k] || [])
+			.flat()
 
 	return {
 		...defaultMonster,
-		HP: { Value: hp, Notes: "" },
-		InitiativeModifier: CombatRank.initProfMod * prof, // + dex
-		Saves: defaultMonster.Saves,
-		AC: { Value: ac, Notes: "" },
+		HP: {Value: hp, Notes: ""},
+		InitiativeModifier: (prof * (CombatRank.initProfMod + CombatRole.initProfMod)) + abAsAbMod(Abilities.Dex),
+		Saves: Saves,
+		AC: {Value: ac, Notes: ""},
+		Senses: [`passive Perception ${abAsAbMod(Abilities.Wis) + prof * CombatRole.perceptionProfMod}`],
+		Skills: [{
+			Name: 'Stealth',
+			Modifier: abModAsAb(Abilities.Dex) + prof * CombatRole.stealthProfMod
+		}],
+		Speed: [`move +${CombatRole.speed} ft`],
+		Abilities,
 		DamageImmunities,
 		DamageResistances,
 		DamageVulnerabilities,
 		ConditionImmunities,
 	}
+}
+
+export type Roll = { sides: number, dice: number, mod: number };
+
+export function rollToString({sides, dice, mod}: Roll): string {
+	const mult = sides / 2 + 0.5;
+	if (sides < 1 || dice < 1) {
+		return (mult * sides).toString();
+	}
+
+	if (mod > 0) {
+		return `${dice}d${sides}+${mod}`
+	}
+
+	if (mod < 0) {
+		return `${dice}d${sides}${mod}`
+	}
+
+	return `${dice}d${sides}`
+}
+
+export function toRoll(i: number, sides: number = 6): Roll {
+	const mult = sides / 2 + 0.5;
+	let dice = Math.floor(i / mult);
+
+	if (!dice) {
+		dice += 1;
+		i -= mult;
+	}
+
+	const mod = Math.floor(i % mult);
+	return {dice, mod, sides};
 }
