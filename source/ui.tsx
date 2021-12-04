@@ -1,5 +1,6 @@
-import React, {PropsWithChildren, useMemo} from 'react';
+import React, {PropsWithChildren, useCallback, useMemo} from 'react';
 import {Monster} from "./types";
+import * as fs from 'fs';
 import {
 	conditionImmunitiesByFlag,
 	expandEdit,
@@ -13,23 +14,25 @@ import {
 	autoMultiSelect,
 	AutoNumber,
 	autoOption,
-	autoOrder, AutoString,
+	autoOrder,
+	AutoString,
 	labeled,
 	noop,
 	objectFrom,
 	passThrough,
 	translate,
-	useTap
+	useTap,
 } from "./autoform";
 import {Newline, useApp, useInput} from "ink";
 import Table from "ink-table";
+import {FocusableButton} from "./button";
 
 interface EditorProps {
 	startingJson: Monster,
 	outputFileName: string,
 }
 
-export function Editor({startingJson}: PropsWithChildren<EditorProps>) {
+export function Editor({startingJson, outputFileName}: PropsWithChildren<EditorProps>) {
 	const {exit} = useApp();
 
 	useInput((input, key) => {
@@ -57,6 +60,7 @@ export function Editor({startingJson}: PropsWithChildren<EditorProps>) {
 		})
 	}, [startingEdit]), startingEdit);
 
+
 	const monster = useMemo(() => expandEdit(editMonster), [editMonster]);
 	const baseData = useMemo(() => [{
 		HP: monster.HP.Value + " " + monster.HP.Notes,
@@ -70,9 +74,17 @@ export function Editor({startingJson}: PropsWithChildren<EditorProps>) {
 		Vuln: [...new Set(monster.DamageVulnerabilities).values()].join(', '),
 	}], [monster]);
 
+	const save = useCallback(() => {
+		fs.writeFileSync(outputFileName, JSON.stringify(monster), 'utf-8')
+		console.error(`Saved to ${outputFileName}`);
+	}, [outputFileName, monster])
+
 	return <>
 		<Newline/>
 		<EditMonster onChange={noop} order={0} parentId={0}/>
+		<FocusableButton order={1} onSubmit={save}>
+			Save
+		</FocusableButton>
 		<Newline/>
 		<Table data={baseData}/>
 		<Table data={[...monster.Traits, ...monster.Actions, ...monster.BonusActions, ...monster.Reactions, ...monster.LegendaryActions]}/>

@@ -17,7 +17,7 @@ const cli = meow(`
 `, {
 	flags: {
 		in: { type: 'string', default: '' },
-		out: { type: 'string', default: '/dev/fd/0' },
+		out: { type: 'string', default: '/dev/fd/1' },
 	}
 });
 
