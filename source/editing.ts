@@ -220,6 +220,7 @@ export function expandEdit(editMonster: EditMonster): Monster {
 	const LegendaryActions = [...defaultMonster.LegendaryActions];
 	const Traits = [...defaultMonster.Traits];
 
+
 	Traits.push({Name: '+', Content: editMonster.WinCondition});
 	Traits.push({Name: '-', Content: editMonster.CounterMeasure});
 

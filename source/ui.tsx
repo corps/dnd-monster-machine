@@ -75,7 +75,7 @@ export function Editor({startingJson, outputFileName}: PropsWithChildren<EditorP
 	}], [monster]);
 
 	const save = useCallback(() => {
-		fs.writeFileSync(outputFileName, JSON.stringify(monster), 'utf-8')
+		fs.writeFileSync(outputFileName, JSON.stringify(monster, null, 2), 'utf-8')
 		console.error(`Saved to ${outputFileName}`);
 	}, [outputFileName, monster])
 
