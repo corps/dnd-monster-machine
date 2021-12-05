@@ -5,7 +5,8 @@ import {
 	conditionImmunitiesByFlag,
 	expandEdit,
 	immunitiesByFlag,
-	ranks, resistancesByFlag,
+	ranks,
+	resistancesByFlag,
 	roles,
 	toEditMonster,
 	vulnerabilitiesByFlag
@@ -47,32 +48,45 @@ export function Editor({startingJson, outputFileName}: PropsWithChildren<EditorP
 		return objectFrom(startingEdit, {
 			...passThrough(startingEdit),
 			CombatLevel: labeled("Level", AutoNumber),
-			CombatRank: labeled("Rank", translate(autoOption(Object.keys(ranks) as (keyof typeof ranks)[]), k => ranks[k], rank =>
-				Object.keys(ranks).find(k => ((ranks as any)[k] === rank)) as any || 'Grunt')),
-			CombatRole: labeled("Role", translate(autoOption(Object.keys(roles) as (keyof typeof roles)[]), k => roles[k], role =>
-				Object.keys(roles).find(k => ((roles as any)[k] === role)) as any || 'Controller')),
+			CombatRank: labeled(
+				"Rank",
+				translate(autoOption(Object.keys(ranks) as (keyof typeof ranks)[]),
+					k => ranks[k],
+					rank => Object.keys(ranks).find(k => ((ranks as any)[k] === rank)) as any || 'Grunt'
+				)
+			),
+			CombatRole: labeled(
+				"Role",
+				translate(autoOption(Object.keys(roles) as (keyof typeof roles)[]),
+					k => roles[k],
+					role => Object.keys(roles).find(k => ((roles as any)[k] === role)) as any || 'Controller'
+				)
+			),
 			Abilities: labeled("Abilities", autoOrder(startingEdit.Abilities)),
 			WinCondition: labeled('Win Condition', AutoString),
 			CounterMeasure: labeled('Counter Measure', AutoString),
-			flags: labeled("Flags",
-				autoMultiSelect([...Object.keys({...immunitiesByFlag, ...vulnerabilitiesByFlag, ...conditionImmunitiesByFlag, ...resistancesByFlag}),
-					'legendary'])),
+			flags: labeled("Flags", autoMultiSelect([
+				...Object.keys({...immunitiesByFlag, ...vulnerabilitiesByFlag, ...conditionImmunitiesByFlag, ...resistancesByFlag}),
+				'legendary'
+			])),
 		})
 	}, [startingEdit]), startingEdit);
 
 
 	const monster = useMemo(() => expandEdit(editMonster), [editMonster]);
-	const baseData = useMemo(() => [{
-		HP: monster.HP.Value + " " + monster.HP.Notes,
-		AC: monster.AC.Value + " " + monster.AC.Notes,
-		Init: monster.InitiativeModifier,
-		Per: monster.Senses.join(', '),
-		Skls: monster.Skills.map(({Name, Modifier}) => `${Name} ${Modifier}`).join(', '),
-		ST: monster.Saves.map(({Name, Modifier}) => `${Name} ${Modifier}`).join(', '),
-		Imm: [...new Set<string>([...monster.DamageImmunities, ...monster.ConditionImmunities]).values()].join(', '),
-		Res: [...new Set(monster.DamageResistances).values()].join(', '),
-		Vuln: [...new Set(monster.DamageVulnerabilities).values()].join(', '),
-	}], [monster]);
+	const baseData = useMemo(() => [
+		{
+			HP: monster.HP.Value + " " + monster.HP.Notes,
+			AC: monster.AC.Value + " " + monster.AC.Notes,
+			Init: monster.InitiativeModifier,
+			Per: monster.Senses.join(', '),
+			Skls: monster.Skills.map(({Name, Modifier}) => `${Name} ${Modifier}`).join(', '),
+			ST: monster.Saves.map(({Name, Modifier}) => `${Name} ${Modifier}`).join(', '),
+			Imm: [...new Set<string>([...monster.DamageImmunities, ...monster.ConditionImmunities]).values()].join(', '),
+			Res: [...new Set(monster.DamageResistances).values()].join(', '),
+			Vuln: [...new Set(monster.DamageVulnerabilities).values()].join(', '),
+		}
+	], [monster]);
 
 	const save = useCallback(() => {
 		fs.writeFileSync(outputFileName, JSON.stringify(monster, null, 2), 'utf-8')
@@ -87,7 +101,13 @@ export function Editor({startingJson, outputFileName}: PropsWithChildren<EditorP
 		</FocusableButton>
 		<Newline/>
 		<Table data={baseData}/>
-		<Table data={[...monster.Traits, ...monster.Actions, ...monster.BonusActions, ...monster.Reactions, ...monster.LegendaryActions]}/>
+		<Table data={[
+			...monster.Traits,
+			...monster.Actions,
+			...monster.BonusActions,
+			...monster.Reactions,
+			...monster.LegendaryActions
+		]}/>
 	</>;
 }
 

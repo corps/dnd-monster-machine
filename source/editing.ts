@@ -95,8 +95,7 @@ export const immunitiesByFlag: Record<string, string[]> = {
 }
 
 export function toEditMonster(monster: Monster): EditMonster {
-	const normalized: Monster = {...defaultMonster, ...monster};
-	return normalized._editing;
+	return monster._editing;
 }
 
 const headNumber = matchNumber.terminatedBy(Parser.nextMatching(/, |-/));
@@ -274,6 +273,7 @@ export function expandEdit(editMonster: EditMonster): Monster {
 		BonusActions,
 		Reactions,
 		LegendaryActions,
+		_editing: editMonster,
 	}
 }
 
