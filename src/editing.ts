@@ -156,7 +156,7 @@ export function inferCombatRank(rankLevel: RankLevel, normalized: Monster) {
 }
 
 export function expandToRankLevel(combatLevel: number, combatRank: CombatRank, combatRole: CombatRole): RankLevel {
-	let {hp, ac, ab, attack, damage, dcs: [dc1, dc2], st: [st1, st2, st3], prof} = combatLevelToGruntPower(combatLevel);
+	let {hp, ac, ab, attack, damage, dcs: [dc2, dc1], st: [st1, st2, st3], prof} = combatLevelToGruntPower(combatLevel);
 
 	hp = Math.floor(hp * 0.75);
 	damage = Math.floor(damage * 1.33);
@@ -282,6 +282,7 @@ export function expandEdit(editMonster: EditMonster): Monster {
 		Reactions,
 		LegendaryActions,
 		_editing: editMonster,
+		Challenge: editMonster.CombatLevel + "",
 	}
 }
 
