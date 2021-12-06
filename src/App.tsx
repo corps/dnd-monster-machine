@@ -1,11 +1,12 @@
 import React, {useMemo} from 'react';
 import {
-	autoMultiSelect,
+	AutoMultilineString, autoMultiSelect,
 	AutoNumber,
 	autoOption,
 	autoOrder,
 	AutoString,
-	labeled, noop,
+	labeled,
+	noop,
 	objectFrom,
 	passThrough,
 	translate,
@@ -41,8 +42,8 @@ function App() {
 				)
 			),
 			Abilities: labeled("Abilities", autoOrder(defaultEditMonster.Abilities)),
-			WinCondition: labeled('Win Condition', AutoString),
-			CounterMeasure: labeled('Counter Measure', AutoString),
+			WinCondition: labeled('Win Condition', AutoMultilineString),
+			CounterMeasure: labeled('Counter Measure', AutoMultilineString),
 			flags: labeled("Flags", autoMultiSelect([
 				...Object.keys({...immunitiesByFlag, ...vulnerabilitiesByFlag, ...conditionImmunitiesByFlag, ...resistancesByFlag}),
 				'legendary'

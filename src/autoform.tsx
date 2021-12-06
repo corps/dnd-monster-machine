@@ -56,12 +56,20 @@ function StringInput({value, onChange}: AutoWrappableInputParams<string>) {
 				  onChange={(e) => {onChange(e.target.value)}} />;
 }
 
+function MultilineStringInput({value, onChange}: AutoWrappableInputParams<string>) {
+	return <textarea value={value}
+								className="input-reset ba b--black-20 pa2 mb2 db w-100"
+								onChange={(e) => {onChange(e.target.value)}} />;
+}
+
+
 function BoolInput({value, onChange}: AutoWrappableInputParams<boolean>) {
 	return <input checked={value} onChange={(e) => {onChange(e.target.checked)}} />
 }
 
 
 export const AutoString = wrapAuto(StringInput);
+export const AutoMultilineString = wrapAuto(MultilineStringInput);
 export const AutoNumber = wrapAuto(NumberInput);
 export const AutoBool = wrapAuto(BoolInput);
 
@@ -269,5 +277,39 @@ export function autoMultiSelect(t: string[]): AutoInput<string[]> {
 			onChange={changeBy}>
 			{t.map((o, i) => <option key={i} value={o} selected={value.includes(o)}>{o}</option> )}
 		</select>
+	}
+}
+
+
+
+export function autoMulti<T>(Input: BoundAutoInput<T>, validate: (t: T) => boolean): AutoInput<T[]> {
+	return ({onChange, default: d}) => {
+		const [value, setValue] = useState(() => d.map((v, i) => [v, i] as [T, number]));
+		const [nextKeyId, setNextKeyId] = useState(value.length);
+
+		const innerChangeValue = useCallback((v: [T, number][]) => {
+			onChange(v.map(([v]) => v));
+			setValue(v);
+		} ,[]);
+
+    const addNewValue = useCallback((newValue: T) => {
+    	if (!validate(newValue)) return;
+			innerChangeValue([...value, [newValue, nextKeyId]]);
+			setNextKeyId(i => i + 1);
+		}, [nextKeyId, setValue, setNextKeyId, value]);
+
+    const changeValue = useCallback((newValue: T, idx: number) => {
+    	if (!validate) {
+    		innerChangeValue([...value.slice(0, idx), ...value.slice(idx + 1)]);
+    		return;
+			}
+
+    	innerChangeValue([...value.slice(0, idx), [newValue, value[idx][1]] as [T, number], ...value.slice(idx + 1)])
+		}, [value]);
+
+		return <>
+			{value.map(([_, i]) => <Input onChange={(v) => changeValue(v, i)}/>)}
+			{<Input onChange={addNewValue}/>}
+		</>
 	}
 }
