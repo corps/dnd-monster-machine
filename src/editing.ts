@@ -228,6 +228,11 @@ export function expandEdit(editMonster: EditMonster): Monster {
 		Content: `Attack: ${attack}, DC ${dcs[0]}, Damage: ${[4, 6, 8, 12].map(sides => rollToString(toRoll(damage, sides))).join(' / ')}`,
 	})
 
+	Actions.push({
+		Name: 'Power (3/Day)',
+		Content: ``,
+	})
+
 	if (flags.includes('legendary')) {
 		Traits.push({
 			Name: 'Legendary Resistance (3/Day)',
