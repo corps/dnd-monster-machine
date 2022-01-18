@@ -6,7 +6,6 @@ COPY package.json /app
 RUN npm install
 COPY . /app
 ENV PATH=/app/node_modules/.bin:$PATH
-RUN npm run build
-CMD node dist/cli.js
+CMD npm start
 
 

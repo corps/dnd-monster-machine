@@ -228,34 +228,7 @@ export function expandEdit(editMonster: EditMonster): Monster {
 
 	Actions.push({
 		Name: 'Attack',
-		Content: `Attack: ${attack}, DC ${dcs[0]}, Damage: ${[4, 6, 8, 12].map(sides => rollToString(toRoll(damage, sides))).join(' / ')}`,
-	})
-
-	Actions.push({
-		Name: 'Power (3/Day)',
-		Content: ``,
-	})
-
-	if (flags.includes('legendary')) {
-		Traits.push({
-			Name: 'Legendary Resistance (3/Day)',
-			Content: 'May succeed a failed saving throw.',
-		})
-
-		LegendaryActions.push({
-			Name: 'Move',
-			Content: 'Make another movement (2 Actions)',
-		})
-	}
-
-	BonusActions.push({
-		Name: 'Secondary Effect',
-		Content: `DC ${dcs[1]}`
-	})
-
-	Reactions.push({
-		Name: 'Reaction',
-		Content: `Prof: ${prof}`
+		Content: `Atk: ${attack} DCs ${dcs.join(' & ')}, Prof: ${prof} Damage: ${[4, 6, 8, 12].map(sides => rollToString(toRoll(damage, sides))).join(' / ')}`,
 	})
 
 	return {
@@ -264,7 +237,7 @@ export function expandEdit(editMonster: EditMonster): Monster {
 		InitiativeModifier: (prof * (CombatRank.initProfMod + CombatRole.initProfMod)) + abAsAbMod(Abilities.Dex),
 		Saves: Saves,
 		AC: {Value: ac, Notes: ""},
-		Senses: [`passive Perception ${10 + abAsAbMod(Abilities.Wis) + prof * CombatRole.perceptionProfMod}`],
+		Senses: [`${abAsAbMod(Abilities.Wis) + prof * CombatRole.perceptionProfMod}`],
 		Skills: [
 			{
 				Name: 'Stealth', Modifier: abAsAbMod(Abilities.Dex) + prof * CombatRole.stealthProfMod

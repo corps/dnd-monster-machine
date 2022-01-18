@@ -1,11 +1,12 @@
 import React, {useMemo} from 'react';
 import {
-	AutoMultilineString, autoMultiSelect,
+	AutoMultilineString,
+	autoMultiSelect,
 	AutoNumber,
 	autoOption,
 	autoOrder,
 	AutoString,
-	labeled,
+	labeled, lift,
 	noop,
 	objectFrom,
 	passThrough,
@@ -42,12 +43,9 @@ function App() {
 				)
 			),
 			Abilities: labeled("Abilities", autoOrder(defaultEditMonster.Abilities)),
-			WinCondition: labeled('Win Condition', AutoMultilineString),
-			CounterMeasure: labeled('Counter Measure', AutoMultilineString),
-			flags: labeled("Flags", autoMultiSelect([
-				...Object.keys({...immunitiesByFlag, ...vulnerabilitiesByFlag, ...conditionImmunitiesByFlag, ...resistancesByFlag}),
-				'legendary'
-			])),
+			WinCondition: lift(""),
+			CounterMeasure: lift(""),
+			flags: lift([] as string[]),
 		})
 	}, [defaultEditMonster]), defaultEditMonster);
 
@@ -70,59 +68,14 @@ function App() {
     <div className="mw7 center pa4">
 		<EditMonster onChange={noop} />
 
+		<pre>
+			HP {baseData.HP} AC: {baseData.AC} Init: {baseData.Init}  Per: {baseData.Per} {baseData.Skls}<br/>
+			{monster.Actions[0].Content}<br/>
+			{monster.Saves.map(({Name, Modifier}) => `${Name}: ${Modifier}`).join(' ')}
+		</pre>
+
 		<div>
 			<textarea value={JSON.stringify(monster, null, 2)} className="input-reset w-100" rows={4}/>
-		</div>
-		<div>
-			HP {baseData.HP} AC: {baseData.AC} Init: {baseData.Init} {baseData.Per}
-		</div>
-		<div>
-			{baseData.Skls} Imm: {baseData.Imm} Res: {baseData.Res} Vuln: {baseData.Vuln}
-		</div>
-
-		<div>
-			<h3>Traits</h3>
-			<ul>
-				{monster.Traits.map(({Name, Content}) => <li>
-					<b>{Name}</b> {Content}
-				</li>)}
-			</ul>
-		</div>
-
-		<div>
-			<h3>Actions</h3>
-			<ul>
-				{monster.Actions.map(({Name, Content}) => <li>
-					<b>{Name}</b> {Content}
-				</li>)}
-			</ul>
-		</div>
-
-		<div>
-			<h3>Bonus Actions</h3>
-			<ul>
-				{monster.BonusActions.map(({Name, Content}) => <li>
-					<b>{Name}</b> {Content}
-				</li>)}
-			</ul>
-		</div>
-
-		<div>
-			<h3>Reactions</h3>
-			<ul>
-				{monster.Reactions.map(({Name, Content}) => <li>
-					<b>{Name}</b> {Content}
-				</li>)}
-			</ul>
-		</div>
-
-		<div>
-			<h3>Legendary Actions</h3>
-			<ul>
-				{monster.LegendaryActions.map(({Name, Content}) => <li>
-					<b>{Name}</b> {Content}
-				</li>)}
-			</ul>
 		</div>
     </div>
   );
